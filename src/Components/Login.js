@@ -1,17 +1,66 @@
 // Importing React
 import React from 'react';
 
-import base from 're-base';
+import base from '../base.js';
+
+import firebase from 'firebase';
+
 
 
 class Login extends React.Component {
 
-    authenticate(provider) {
-        console.log(`Trying to log in with ${provider}`);
-
-        base.authWithOAuthPopup(provider, this.authHandler)
+    constructor () {
+        super();
+        this.authHandler = this.authHandler.bind(this);
+        this.authenticate = this.authenticate.bind(this);
+        this.logout = this.logout.bind(this);
+        this.renderLogin = this.renderLogin.bind(this);
+        this.state = {
+            uid: null,
+            owner:null
+        }
     }
 
+    logout() {
+        console.log('logout running')
+    }
+
+    authHandler(err, authData) {
+        console.log('authHandler is running')
+
+        if (err) {
+            console.log(err);
+            return;
+        }
+
+        const storeRef = base.database().ref(this.props.storeId);
+
+        storeRef.once('value', (snapshot) => {
+            const data = snapshot.val() || {};
+
+            if(!data.owner) {
+                storeRef.set({
+                    owner: authData.user.uid
+                })
+            }
+
+            this.setState({
+                uid: authData.user.uid,
+                owner: data.owner || authData.user.uid
+            })
+
+        })
+    }
+
+
+    authenticate(provider) {
+        console.log(`Attempting to log with ${provider}`)
+        if (provider = 'facebook') {
+            const provider = new firebase.auth.FacebookAuthProvider()
+            firebase.auth().signInWithPopup(provider).then(this.authHandler)
+        }
+
+    }
     renderLogin() {
         return (
             <nav className="login">
