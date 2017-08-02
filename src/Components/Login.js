@@ -1,67 +1,43 @@
-// Importing React
 import React from 'react';
 
-import base from '../base.js';
-
-import firebase from 'firebase';
-
-
+import base from '../base'
 
 class Login extends React.Component {
 
     constructor () {
-        super();
-        this.authHandler = this.authHandler.bind(this);
+        super()
         this.authenticate = this.authenticate.bind(this);
-        this.logout = this.logout.bind(this);
-        this.renderLogin = this.renderLogin.bind(this);
-        this.state = {
-            uid: null,
-            owner:null
-        }
+        this.authHandler = this.authHandler.bind(this);
+
     }
 
-    logout() {
-        console.log('logout running')
+    authenticate (provider) {
+        console.log(`Attempting to log in with ${provider}`)
+
+        base.authWithOAuthPopup(provider, this.authHandler)
     }
 
-    authHandler(err, authData) {
-        console.log('authHandler is running')
-
+    authHandler (err, authData) {
         if (err) {
             console.log(err);
             return;
         }
 
-        const storeRef = base.database().ref(this.props.storeId);
+        if (authData) {
+            console.dir(authData)
 
-        storeRef.once('value', (snapshot) => {
-            const data = snapshot.val() || {};
+            const uid = authData.user.uid
 
-            if(!data.owner) {
-                storeRef.set({
-                    owner: authData.user.uid
-                })
-            }
+            console.log(uid)
 
-            this.setState({
-                uid: authData.user.uid,
-                owner: data.owner || authData.user.uid
-            })
+            console.log(`going to ${uid}`)
 
-        })
-    }
-
-
-    authenticate(provider) {
-        console.log(`Attempting to log with ${provider}`)
-        if (provider = 'facebook') {
-            const provider = new firebase.auth.FacebookAuthProvider()
-            firebase.auth().signInWithPopup(provider).then(this.authHandler)
+            this.context.router.transitionTo(`/user/${uid}`)
         }
 
     }
-    renderLogin() {
+
+    render () {
         return (
             <nav className="login">
                 <h2>Inventory</h2>
@@ -69,18 +45,12 @@ class Login extends React.Component {
                 <button className="facebook" onClick={() => this.authenticate('facebook')}>Log In with Facebook</button>
                 <button className="github" onClick={() => this.authenticate('github')}>Log in with Github</button>
             </nav>
-        )}
-
-    render () {
-
-        const logout = <button onClick={this.logout}>Log Out</button>
-            return (
-                <div>
-                    {logout}
-                    {this.renderLogin()}
-                </div>
-            )
+        )
     }
+}
+
+Login.contextTypes = {
+    router: React.PropTypes.object
 }
 
 export default Login

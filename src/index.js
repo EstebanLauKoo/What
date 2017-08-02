@@ -1,20 +1,31 @@
+// Lets start this
+
+// Importing react react to use its methods
+// Specifically comes from package.json dependencies
 import React from 'react';
-import ReactDOM from 'react-dom';
+
+import { render } from 'react-dom';
+
+import { BrowserRouter, Match, Miss} from 'react-router';
+
 import './index.css';
-import App from './App';
-import registerServiceWorker from './registerServiceWorker';
-// using ES6 modules
-import { BrowserRouter, Route, Link } from 'react-router-dom'
+import Login from './Components/Login';
+import User from './User'
+import notFound from './notFound'
+
 
 
 const Root = () => {
     return(
         <BrowserRouter>
-            <Route path="/" component={App} />
+            <div>
+                <Match exactly pattern="/" component={Login} />
+                <Match pattern="/:uid"  component={User} />
+                <Miss component={notFound} />
+            </div>
         </BrowserRouter>
     )
 }
 
-ReactDOM.render(<Root />, document.getElementById('root'));
-registerServiceWorker();
+render(<Root />, document.getElementById('root'));
 
